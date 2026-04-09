@@ -1,503 +1,373 @@
 const fs = require("fs");
 const {
-  Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel,
-  Header, Footer, PageNumber, PageBreak, BorderStyle, TabStopType, TabStopPosition,
-  LevelFormat
+  Document, Packer, Paragraph, TextRun, Header, Footer,
+  AlignmentType, HeadingLevel, PageBreak, PageNumber, BorderStyle
 } = require("docx");
 
 // Academic color palette
-const colors = {
-  primary: "1A1F16",     // Deep Forest Ink
-  body: "2D3329",        // Dark Moss Gray
-  secondary: "4A5548",   // Neutral Olive
-  accent: "94A3B8",      // Steady Silver
+const c = {
+  primary: "1B2A4A",    // Navy
+  body: "1E293B",       // Dark slate
+  secondary: "4A5568",  // Muted gray
+  accent: "8B4513",     // Burgundy-brown
 };
+
+// Helper: body paragraph (left-aligned, English, 1.3x line spacing)
+function bodyPara(runs, opts = {}) {
+  return new Paragraph({
+    alignment: AlignmentType.LEFT,
+    spacing: { after: 160, line: 250 },
+    ...opts,
+    children: runs.map(r =>
+      typeof r === "string"
+        ? new TextRun({ text: r, font: "Calibri", size: 22, color: c.body })
+        : r
+    ),
+  });
+}
+
+function t(text, extra = {}) {
+  return new TextRun({ text, font: "Calibri", size: 22, color: c.body, ...extra });
+}
+function ti(text, extra = {}) {
+  return new TextRun({ text, font: "Calibri", size: 22, color: c.body, italics: true, ...extra });
+}
+function tb(text, extra = {}) {
+  return new TextRun({ text, font: "Calibri", size: 22, color: c.body, bold: true, ...extra });
+}
+
+// ===================== CONTENT =====================
+
+const backgroundParas = [
+  // Opening — start with a broad but concrete point, not a sweeping global statement
+  bodyPara([
+    t("Most people spend a substantial portion of their day indoors — in homes, offices, classrooms, and waiting areas — often assuming that the air they breathe there is clean. In reality, indoor air is a complex mixture of particles, microbes, volatile organic compounds, and other agents that can affect human health in ways we are still working to fully understand. Among the biological components of indoor air, fungi occupy a particularly important place because of their ubiquity, their resilience, and the range of health problems they are known to cause or worsen (Burge, 1990). Fungal spores are present nearly everywhere in the outdoor environment, and they find their way into buildings through open doors and windows, ventilation systems, and on the clothing and bodies of occupants. Once inside, they settle on surfaces, colonise damp or poorly maintained areas, and in many cases reproduce, releasing still more spores into the enclosed air.")
+  ]),
+
+  bodyPara([
+    t("The World Health Organization has recognised dampness and mould as a risk to health since at least 2009, when it published guidelines linking indoor fungal growth to respiratory symptoms, allergic reactions, and in some cases more serious infections, especially among immunocompromised individuals (WHO, 2009). Khan and Karuppayil (2012), in a widely cited review, described indoor environments as "
+    ), ti("potential reservoirs"), t(" of fungal pollution and noted that species commonly found indoors — including members of the genera "),
+    ti("Aspergillus"), t(", "), ti("Penicillium"), t(", "), ti("Cladosporium"), t(", and "), ti("Alternaria"), t(" — have well-documented associations with allergic rhinitis, asthma exacerbation, and hypersensitivity pneumonitis. Nevalainen, Täubel, and Hyvärinen (2015) extended this view, arguing that fungi and their secondary metabolites (mycotoxins and volatile organic compounds) are "),
+    ti("companions and contaminants"), t(" of indoor spaces — present whether we notice them or not, and capable of influencing health even at relatively low concentrations.")
+  ]),
+
+  bodyPara([
+    t("Educational buildings deserve special attention in this conversation. Students and staff spend hours each day in lecture halls, laboratories, libraries, and reception areas, often in buildings that were not originally designed with indoor air quality as a priority. The situation in tropical and subtropical regions is especially concerning. Warm temperatures, high relative humidity, and seasonal rainfall create conditions that favour fungal growth on building materials and in the air (Al Hallak et al., 2023). Kallawicha et al. (2017) demonstrated this clearly in their study of ambient fungal spore concentrations in Taipei, a subtropical city, where they found that temperature and relative humidity were the strongest meteorological predictors of airborne fungal load. Similarly, Chin et al. (2020) reported significant associations between indoor fungal exposure and asthma among junior high school students in Johor Bahru, Malaysia — another tropical setting — underscoring the health stakes for young people in these environments.")
+  ]),
+
+  bodyPara([
+    t("In Nigeria specifically, research on indoor aeromycology has grown but remains limited. Odebode et al. (2020) surveyed airborne fungi across five locations in Lagos State between 2014 and 2016 and found that "),
+    ti("Aspergillus"), t(" and "),
+    ti("Penicillium"), t(" species dominated the indoor air profiles, a finding consistent with studies from other humid tropical cities. Madukasi et al. (2021) assessed microbiological air quality in lecture halls, laboratories, and offices at a tertiary institution in south-eastern Nigeria and reported fungal counts that exceeded recommended thresholds in several locations. Eze et al. (2021) likewise documented elevated fungal aerosol loads in crowded indoor spaces in Port Harcourt, including schools and markets. These studies, taken together, suggest that fungal contamination of indoor air is a real and measurable problem in Nigerian educational settings, though the body of evidence is still far from comprehensive.")
+  ]),
+
+  bodyPara([
+    t("This is the context in which the present study sits. Nile University of Nigeria, located in the nation's capital territory of Abuja, operates several academic buildings that serve hundreds of students and staff each day. Among these are the Niger, Volta, and Limpopo buildings — three named halls that house reception areas, lecture rooms, and administrative offices. Like many institutions in the region, the university has expanded rapidly, and questions about the quality of the indoor environment in these buildings have not, to date, been systematically addressed. This chapter sets out the rationale for investigating the fungal microflora in the reception areas of these three buildings, the questions the study seeks to answer, and the contribution it aims to make to the broader literature on indoor air quality in tropical educational institutions.")
+  ]),
+];
+
+const problemParas = [
+  bodyPara([
+    t("Despite the growing body of international literature on indoor fungal contamination, there is a persistent gap when it comes to data from sub-Saharan African educational institutions. Much of what we know comes from studies conducted in Europe, North America, and East Asia (Wu et al., 2020; Fan et al., 2021), where climate conditions, building materials, and maintenance practices differ substantially from those found in West Africa. This matters because the factors that drive indoor fungal growth — humidity, temperature, ventilation rates, occupancy density — are not uniform across geographies. A building in Beijing, for example, faces a very different set of indoor environmental pressures than a building in Abuja, and findings from one context cannot simply be transplanted to the other (Lu et al., 2022).")
+  ]),
+
+  bodyPara([
+    t("Within Nigeria, the few studies that do exist tend to focus on hospitals, residential homes, or outdoor ambient air (Odebode et al., 2020; Eze et al., 2021). Reception areas in university buildings have received comparatively little attention, even though these spaces are often high-traffic zones where students, staff, and visitors congregate — sometimes for extended periods — while waiting for appointments, collecting documents, or attending to administrative matters. The design of many Nigerian university buildings, with open corridors, limited mechanical ventilation, and variable maintenance standards, means that reception areas can behave quite differently from classrooms or laboratories in terms of air exchange and fungal spore dynamics. We simply do not have good baseline data for these spaces.")
+  ]),
+
+  bodyPara([
+    t("There is also the matter of health risk perception. Students and staff at institutions like Nile University may be routinely exposed to airborne fungal spores without any awareness of the fact, and without any institutional monitoring in place to track exposure levels over time. Mousavi et al. (2016) highlighted the particular concern posed by "),
+    ti("Aspergillus"), t(" species in indoor environments, noting their capacity to cause invasive aspergillosis in vulnerable individuals. While healthy adults may tolerate moderate spore exposures without obvious symptoms, the same cannot be said for individuals with asthma, chronic respiratory conditions, or weakened immune systems — populations that are present on any university campus. Without data, there is no basis for risk assessment, and without risk assessment, there is no impetus for improvement.")
+  ]),
+
+  bodyPara([
+    t("This study therefore addresses a straightforward but important problem: we do not currently know what fungal species are present in the indoor air of the reception areas in the Niger, Volta, and Limpopo buildings at Nile University of Nigeria, nor do we know at what concentrations they occur. That gap in knowledge makes it difficult for the university's administration, and for the broader academic community, to make evidence-based decisions about indoor environmental management.")
+  ]),
+];
+
+const justificationParas = [
+  bodyPara([
+    t("A handful of Nigerian studies have touched on indoor air quality in educational settings — Madukasi et al. (2021) in the south-east, Eze et al. (2021) in Port Harcourt, and others — but these were conducted at different institutions, in different climatic zones, and often with different sampling methodologies. Abuja sits in Nigeria's middle belt, characterised by a mix of Sudan savanna vegetation, distinct wet and dry seasons, and an altitude of around 840 metres above sea level. These geographic and climatic features distinguish it from the more southern and coastal cities where most Nigerian aeromycology research has taken place. A study conducted here would add a genuinely new data point to the national literature.")
+  ]),
+
+  bodyPara([
+    t("The choice of reception areas as the sampling focus is deliberate. While classrooms and laboratories are important, they tend to be occupied in structured, predictable ways — a lecture lasts two hours, a lab session three. Reception areas, by contrast, have irregular, sometimes continuous foot traffic throughout the working day. Doors are opened and closed frequently. People arrive from outside carrying spores on their clothing. The air exchange patterns in these spaces are less well understood, and yet they may represent points of higher or more variable exposure than more controlled indoor environments. Studying reception areas therefore fills a niche that existing campus-based air quality surveys have largely overlooked.")
+  ]),
+
+  bodyPara([
+    t("Methodologically, this study adopts the passive sedimentation (settle plate) technique for fungal sampling. This is a widely used, low-cost approach that has been employed in aeromycological surveys around the world for decades (Zhang et al., 2022). While it does not capture the total airborne fungal load as precisely as active air sampling, it provides a reliable indication of the culturable fungi that settle out of the air over a given period — which is, arguably, the fraction most relevant to human exposure, since settled spores can later be re-aerosolised through occupant activity, cleaning, or draughts. Yuan et al. (2022) used a combination of active and passive sampling in their survey of indoor and outdoor airborne fungi at Tianjin University in China and found that the two approaches yielded broadly comparable species profiles, lending support to the continued use of settle plates in settings where active samplers are not available.")
+  ]),
+
+  bodyPara([
+    t("Taken together, the geographic specificity (Abuja), the institutional context (Nile University), the focus on reception areas, and the use of morphological identification methods make this study a meaningful addition to the evidence base. It is not an exhaustive survey of all indoor spaces on campus, but it is a focused, reproducible assessment that can serve as a starting point for more extensive monitoring in the future.")
+  ]),
+];
+
+const aimObjParas = [
+  bodyPara([
+    tb("Aim of the Study"), t("")
+  ], { spacing: { after: 80, line: 250 } }),
+  bodyPara([
+    t("The overarching aim of this study is to assess the fungal microflora present in the indoor air of the reception areas in three academic buildings — Niger, Volta, and Limpopo — at Nile University of Nigeria, Abuja.")
+  ]),
+
+  new Paragraph({
+    alignment: AlignmentType.LEFT,
+    spacing: { after: 80, line: 250 },
+    children: [tb("Specific Objectives")],
+  }),
+
+  bodyPara([
+    t("The specific objectives are to:")
+  ]),
+  bodyPara([t("1.  Isolate and identify the fungal species present in the indoor air of the reception areas of the three buildings using cultural and morphological methods.")], { indent: { left: 360 } }),
+  bodyPara([t("2.  Determine the frequency of occurrence and relative abundance of each fungal species across the three sampling locations.")], { indent: { left: 360 } }),
+  bodyPara([t("3.  Compare the fungal diversity profiles among the Niger, Volta, and Limpopo building reception areas.")], { indent: { left: 360 } }),
+  bodyPara([t("4.  Assess whether the observed fungal concentrations and species profiles fall within ranges considered acceptable by established indoor air quality guidelines.")], { indent: { left: 360 } }),
+];
+
+const significanceParas = [
+  bodyPara([
+    t("This study contributes to the literature in several practical ways. First, it provides baseline data on indoor fungal contamination at a Nigerian university where no such assessment has previously been carried out. Baseline data is, by its nature, unglamorous — but it is essential. Without knowing what is currently present in the air, it is impossible to track changes over time, evaluate the effectiveness of maintenance interventions, or respond meaningfully to health complaints from building occupants.")
+  ]),
+
+  bodyPara([
+    t("Second, the findings may inform the university's facilities management decisions. If the study identifies elevated fungal loads or the presence of species with known pathogenic potential (for example, "),
+    ti("Aspergillus fumigatus"), t(" or "), ti("Aspergillus flavus"), t("), that information could prompt targeted actions — improved ventilation, moisture control, periodic cleaning protocols, or building material upgrades. Anaissie et al. (2002) demonstrated, in a landmark three-year prospective study in a hospital setting, that pathogenic "),
+    ti("Aspergillus"), t(" species can persist in indoor water systems and contribute to nosocomial infections. While a university is not a hospital, the principle is the same: knowing what is there is the first step toward managing it.")
+  ]),
+
+  bodyPara([
+    t("Third, the study adds to the body of knowledge on indoor air quality in tropical educational buildings more broadly. As Wu et al. (2020) noted in their systematic review of indoor microbial exposures in China, there is a global need for more geographically diverse studies to move beyond the current over-reliance on data from temperate, high-income countries. Nigerian institutions have an important role to play in filling that gap.")
+  ]),
+
+  bodyPara([
+    t("Finally, from a public health and sustainable development perspective, this study aligns with the Sustainable Development Goals — specifically SDG 3 (Good Health and Well-being) and SDG 4 (Quality Education). Students and staff have a right to learn and work in environments that do not pose unnecessary health risks, and generating the data needed to ensure that is a worthwhile endeavour in itself.")
+  ]),
+];
+
+const scopeParas = [
+  bodyPara([
+    t("The study is confined to the reception areas of three academic buildings on the main campus of Nile University of Nigeria in Abuja: the Niger, Volta, and Limpopo buildings. These three buildings were selected because they represent distinct, frequently used points of entry and congregation within the university's academic zone, and because they are accessible for repeated sampling visits within the available timeframe.")
+  ]),
+
+  bodyPara([
+    t("Sampling is limited to culturable airborne fungi captured using the passive sedimentation (settle plate) method. Fungal identification is carried out through macroscopic and microscopic morphological examination, supported by standard taxonomic keys. The study does not employ molecular identification techniques (such as PCR or DNA sequencing), nor does it attempt to quantify mycotoxin levels or assess other indoor air quality parameters (bacterial load, particulate matter, carbon dioxide concentration, or temperature and humidity readings). These are acknowledged limitations that could be addressed in future work.")
+  ]),
+
+  bodyPara([
+    t("The temporal scope of the study covers a single sampling period during the rainy season, when fungal spore loads in Abuja are expected to be at or near their peak. While a cross-sectional study of this kind cannot capture seasonal variation, it provides a useful snapshot of worst-case conditions — the period during which indoor fungal contamination is most likely to be elevated. The study does not attempt to correlate fungal findings with health outcomes among building occupants, as that would require a different (and considerably more complex) study design involving clinical data and participant consent.")
+  ]),
+];
+
+// ===================== DOCUMENT =====================
 
 const doc = new Document({
   styles: {
     default: {
       document: {
-        run: { font: "Times New Roman", size: 24, color: colors.body }
-      }
+        run: { font: "Calibri", size: 22, color: c.body },
+      },
     },
     paragraphStyles: [
       {
         id: "Heading1", name: "Heading 1", basedOn: "Normal", next: "Normal", quickFormat: true,
-        run: { size: 32, bold: true, color: colors.primary, font: "Times New Roman" },
-        paragraph: { spacing: { before: 480, after: 240, line: 276 }, outlineLevel: 0 }
+        run: { size: 36, bold: true, font: "Times New Roman", color: c.primary },
+        paragraph: { spacing: { before: 600, after: 300 }, outlineLevel: 0 },
       },
       {
         id: "Heading2", name: "Heading 2", basedOn: "Normal", next: "Normal", quickFormat: true,
-        run: { size: 28, bold: true, color: colors.primary, font: "Times New Roman" },
-        paragraph: { spacing: { before: 360, after: 180, line: 276 }, outlineLevel: 1 }
-      }
-    ]
-  },
-  numbering: {
-    config: [
-      {
-        reference: "objectives-list",
-        levels: [{
-          level: 0, format: LevelFormat.LOWER_ROMAN, text: "%1.",
-          alignment: AlignmentType.LEFT,
-          style: { paragraph: { indent: { left: 720, hanging: 360 } } }
-        }]
-      }
-    ]
+        run: { size: 28, bold: true, font: "Times New Roman", color: c.primary },
+        paragraph: { spacing: { before: 360, after: 200 }, outlineLevel: 1 },
+      },
+    ],
   },
   sections: [
-    // COVER PAGE SECTION
+    // ---- COVER PAGE ----
     {
       properties: {
         page: {
-          margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 },
-          size: { width: 11906, height: 16838 }
+          margin: { top: 0, bottom: 0, left: 0, right: 0 },
+          size: { width: 11906, height: 16838 },
         },
-        titlePage: true
-      },
-      headers: {
-        default: new Header({ children: [new Paragraph({ children: [] })] }),
-        first: new Header({ children: [new Paragraph({ children: [] })] })
-      },
-      footers: {
-        default: new Header({ children: [new Paragraph({ children: [] })] }),
-        first: new Header({ children: [new Paragraph({ children: [] })] })
+        titlePage: true,
       },
       children: [
-        new Paragraph({ spacing: { before: 2400 }, alignment: AlignmentType.CENTER, children: [] }),
+        // Spacer to push content to vertical center
+        new Paragraph({ spacing: { before: 4800 }, children: [t("")] }),
+        // Decorative line
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 400 },
+          children: [new TextRun({ text: "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", font: "Calibri", size: 20, color: c.accent })],
+        }),
+        // Title
         new Paragraph({
           alignment: AlignmentType.CENTER,
           spacing: { after: 200 },
-          children: [new TextRun({
-            text: "ASSESSMENT OF FUNGAL MICROFLORA IN THE",
-            font: "Times New Roman", size: 32, bold: true, color: colors.primary
-          })]
+          children: [new TextRun({ text: "CHAPTER ONE", font: "Times New Roman", size: 44, bold: true, color: c.primary })],
         }),
         new Paragraph({
           alignment: AlignmentType.CENTER,
-          spacing: { after: 200 },
-          children: [new TextRun({
-            text: "INDOOR AIR OF RECEPTION AREAS IN THREE",
-            font: "Times New Roman", size: 32, bold: true, color: colors.primary
-          })]
-        }),
-        new Paragraph({
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 200 },
-          children: [new TextRun({
-            text: "ACADEMIC BUILDINGS (NIGER, VOLTA, LIMPOPO)",
-            font: "Times New Roman", size: 32, bold: true, color: colors.primary
-          })]
-        }),
-        new Paragraph({
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 600 },
-          children: [new TextRun({
-            text: "IN NILE UNIVERSITY OF NIGERIA",
-            font: "Times New Roman", size: 32, bold: true, color: colors.primary
-          })]
+          spacing: { after: 120 },
+          children: [new TextRun({ text: "INTRODUCTION", font: "Times New Roman", size: 36, color: c.secondary })],
         }),
         // Decorative line
         new Paragraph({
           alignment: AlignmentType.CENTER,
           spacing: { after: 600 },
+          children: [new TextRun({ text: "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", font: "Calibri", size: 20, color: c.accent })],
+        }),
+        // Project Title
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 100 },
           children: [new TextRun({
-            text: "____________________________",
-            font: "Times New Roman", size: 24, color: colors.accent
-          })]
+            text: "Assessment of Fungal Microflora in the Indoor Air",
+            font: "Times New Roman", size: 28, color: c.primary, italics: true
+          })],
         }),
         new Paragraph({
           alignment: AlignmentType.CENTER,
-          spacing: { after: 200 },
+          spacing: { after: 100 },
           children: [new TextRun({
-            text: "CHAPTER ONE",
-            font: "Times New Roman", size: 28, bold: true, color: colors.secondary
-          })]
-        }),
-        new Paragraph({
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 600 },
-          children: [new TextRun({
-            text: "INTRODUCTION",
-            font: "Times New Roman", size: 28, bold: true, color: colors.secondary
-          })]
-        }),
-        new Paragraph({
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 120 },
-          children: [new TextRun({
-            text: "A Project Submitted to the Department of Microbiology,",
-            font: "Times New Roman", size: 22, color: colors.secondary
-          })]
-        }),
-        new Paragraph({
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 120 },
-          children: [new TextRun({
-            text: "Faculty of Sciences, Nile University of Nigeria",
-            font: "Times New Roman", size: 22, color: colors.secondary
-          })]
+            text: "of Reception Areas in Three Academic Buildings",
+            font: "Times New Roman", size: 28, color: c.primary, italics: true
+          })],
         }),
         new Paragraph({
           alignment: AlignmentType.CENTER,
           spacing: { after: 400 },
           children: [new TextRun({
-            text: "In Partial Fulfillment of the Requirement for the Award of",
-            font: "Times New Roman", size: 22, color: colors.secondary
-          })]
+            text: "(Niger, Volta, Limpopo) in Nile University of Nigeria",
+            font: "Times New Roman", size: 28, color: c.primary, italics: true
+          })],
         }),
+        // Institution
         new Paragraph({
           alignment: AlignmentType.CENTER,
-          spacing: { after: 600 },
+          spacing: { after: 120 },
           children: [new TextRun({
-            text: "the Bachelor of Science Degree in Microbiology (B.Sc.)",
-            font: "Times New Roman", size: 22, color: colors.secondary
-          })]
+            text: "Nile University of Nigeria",
+            font: "Times New Roman", size: 26, bold: true, color: c.primary
+          })],
         }),
         new Paragraph({
           alignment: AlignmentType.CENTER,
           spacing: { after: 120 },
           children: [new TextRun({
-            text: "April, 2026",
-            font: "Times New Roman", size: 24, color: colors.secondary
-          })]
-        })
-      ]
+            text: "Abuja, Nigeria",
+            font: "Calibri", size: 22, color: c.secondary
+          })],
+        }),
+      ],
     },
-    // MAIN CONTENT SECTION
+    // ---- MAIN CONTENT ----
     {
       properties: {
         page: {
-          margin: { top: 1800, right: 1440, bottom: 1440, left: 1440 },
+          margin: { top: 1800, bottom: 1440, left: 1440, right: 1440 },
           size: { width: 11906, height: 16838 },
-          pageNumbers: { start: 1 }
-        }
+        },
       },
       headers: {
         default: new Header({
           children: [new Paragraph({
             alignment: AlignmentType.RIGHT,
             spacing: { after: 0 },
-            children: [new TextRun({
-              text: "Chapter One: Introduction",
-              font: "Times New Roman", size: 18, italics: true, color: colors.accent
-            })]
-          })]
-        })
+            children: [new TextRun({ text: "Chapter One — Introduction", font: "Calibri", size: 18, color: c.secondary, italics: true })],
+          })],
+        }),
       },
       footers: {
         default: new Footer({
           children: [new Paragraph({
             alignment: AlignmentType.CENTER,
             children: [
-              new TextRun({ text: "Page ", font: "Times New Roman", size: 18, color: colors.accent }),
-              new TextRun({ children: [PageNumber.CURRENT], font: "Times New Roman", size: 18, color: colors.accent }),
-              new TextRun({ text: " of ", font: "Times New Roman", size: 18, color: colors.accent }),
-              new TextRun({ children: [PageNumber.TOTAL_PAGES], font: "Times New Roman", size: 18, color: colors.accent })
-            ]
-          })]
-        })
+              new TextRun({ text: "— ", font: "Calibri", size: 18, color: c.secondary }),
+              new TextRun({ children: [PageNumber.CURRENT], font: "Calibri", size: 18, color: c.secondary }),
+              new TextRun({ text: " —", font: "Calibri", size: 18, color: c.secondary }),
+            ],
+          })],
+        }),
       },
       children: [
-        // CHAPTER TITLE
+        // 1.1 Background
         new Paragraph({
           heading: HeadingLevel.HEADING_1,
-          alignment: AlignmentType.CENTER,
-          spacing: { before: 0, after: 360 },
-          children: [new TextRun({
-            text: "CHAPTER ONE",
-            font: "Times New Roman", size: 36, bold: true, color: colors.primary
-          })]
+          children: [new TextRun({ text: "1.1  Background of the Study" })],
         }),
-        new Paragraph({
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 480 },
-          children: [new TextRun({
-            text: "INTRODUCTION",
-            font: "Times New Roman", size: 32, bold: true, color: colors.primary
-          })]
-        }),
+        ...backgroundParas,
 
-        // 1.1 BACKGROUND OF THE STUDY
+        // 1.2 Statement of Problem
         new Paragraph({
-          heading: HeadingLevel.HEADING_2,
-          spacing: { before: 360, after: 240 },
-          children: [new TextRun({ text: "1.1  Background of the Study", font: "Times New Roman", size: 28, bold: true, color: colors.primary })]
+          heading: HeadingLevel.HEADING_1,
+          children: [new TextRun({ text: "1.2  Statement of the Problem" })],
         }),
+        ...problemParas,
 
+        // 1.3 Justification
         new Paragraph({
-          alignment: AlignmentType.JUSTIFIED,
-          spacing: { after: 200, line: 360 },
-          children: [new TextRun({
-            text: "Fungi represent one of the most diverse and ecologically significant groups of microorganisms on Earth, playing indispensable roles in nutrient cycling, organic matter decomposition, and the maintenance of balanced ecosystems. They exist in virtually every habitat, from soil and water to the atmosphere, where they disperse primarily through the release of microscopic spores or fragmented hyphae that are easily carried by air currents (Segers et al., 2023). In outdoor environments, airborne fungi contribute to natural processes such as the breakdown of plant litter and the recycling of essential nutrients. However, when these fungal propagules enter indoor spaces, they can accumulate to levels that pose significant risks to human health, building infrastructure, and the integrity of stored materials (Al Hallak et al., 2023). The study of fungal communities in indoor air, known as aeromycology, has therefore emerged as a critical area of environmental microbiology and public health research.",
-            font: "Times New Roman", size: 24, color: colors.body
-          })]
+          heading: HeadingLevel.HEADING_1,
+          children: [new TextRun({ text: "1.3  Justification of the Study" })],
         }),
+        ...justificationParas,
 
+        // 1.4 Aim and Objectives
         new Paragraph({
-          alignment: AlignmentType.JUSTIFIED,
-          spacing: { after: 200, line: 360 },
-          children: [new TextRun({
-            text: "Indoor air quality has become a subject of growing global concern as populations worldwide spend increasing proportions of their time within enclosed spaces, including homes, offices, hospitals, and educational institutions. The World Health Organization (WHO) estimates that individuals in urban areas may spend up to 90% of their daily lives indoors, making the quality of indoor air a major determinant of overall health and well-being (WHO, 2022). Among the various biological contaminants that compromise indoor air quality, fungal spores are particularly noteworthy due to their ubiquity, resilience, and capacity to cause a wide spectrum of adverse health effects. Common indoor fungal genera such as Aspergillus, Penicillium, Cladosporium, Alternaria, and Mucor have been repeatedly identified as dominant components of indoor mycoflora across diverse geographic and climatic settings (Verma et al., 2012; Kour et al., 2025). These fungi produce vast quantities of spores that remain suspended in air for extended periods, settle on surfaces, and colonize available substrates under favourable conditions of temperature, humidity, and nutrient availability.",
-            font: "Times New Roman", size: 24, color: colors.body
-          })]
+          heading: HeadingLevel.HEADING_1,
+          children: [new TextRun({ text: "1.4  Aim and Objectives of the Study" })],
         }),
+        ...aimObjParas,
 
+        // 1.5 Significance
         new Paragraph({
-          alignment: AlignmentType.JUSTIFIED,
-          spacing: { after: 200, line: 360 },
-          children: [new TextRun({
-            text: "The health implications of exposure to indoor fungal spores are extensive and well-documented in the scientific literature. Inhalation of fungal spores and their fragmented hyphal components can trigger allergic reactions, including allergic rhinitis, conjunctivitis, and dermatological hypersensitivity responses. More severe consequences include the exacerbation of asthma, the development of hypersensitivity pneumonitis, and invasive fungal infections, particularly among immunocompromised individuals such as patients undergoing chemotherapy, organ transplant recipients, and those living with HIV/AIDS (Ayanbimpe and Wapwera, 2012; Hallak et al., 2023). Certain fungal species, notably members of the genera Aspergillus and Fusarium, are also known to produce mycotoxins, which are toxic secondary metabolites that can cause acute and chronic health effects when inhaled or ingested. The presence of these toxigenic fungi in indoor environments thus elevates the public health significance of indoor air quality monitoring and fungal contamination assessment.",
-            font: "Times New Roman", size: 24, color: colors.body
-          })]
+          heading: HeadingLevel.HEADING_1,
+          children: [new TextRun({ text: "1.5  Significance of the Study" })],
         }),
+        ...significanceParas,
 
+        // 1.6 Scope
         new Paragraph({
-          alignment: AlignmentType.JUSTIFIED,
-          spacing: { after: 200, line: 360 },
-          children: [new TextRun({
-            text: "Educational institutions represent a particularly important category of indoor environments for fungal air quality assessment. University campuses typically host large and diverse populations of students, faculty members, administrative staff, and visitors who spend considerable periods within classrooms, lecture halls, libraries, offices, and reception areas. These spaces are characterised by high occupancy density, frequent movement of people, and variable environmental conditions, all of which contribute to the accumulation and dispersal of airborne fungal spores (Ilie\u0219 et al., 2025). Reception areas in academic buildings are especially noteworthy in this regard, as they serve as primary points of entry and congregation. Visitors, students, and staff continuously pass through these spaces, introducing outdoor fungal spores on clothing, footwear, and personal belongings while simultaneously disturbing settled dust and spores that may have accumulated on floors, furniture, and other surfaces. The combination of high foot traffic, potentially inadequate ventilation, and the presence of organic substrates makes reception areas potentially significant reservoirs for airborne fungal contamination.",
-            font: "Times New Roman", size: 24, color: colors.body
-          })]
+          heading: HeadingLevel.HEADING_1,
+          children: [new TextRun({ text: "1.6  Scope of the Study" })],
         }),
+        ...scopeParas,
 
+        // References heading
         new Paragraph({
-          alignment: AlignmentType.JUSTIFIED,
-          spacing: { after: 200, line: 360 },
-          children: [new TextRun({
-            text: "In the Nigerian context, the assessment of indoor fungal microflora carries particular urgency due to the prevailing tropical climate, which is characterised by elevated temperatures and high relative humidity throughout much of the year. These environmental conditions are highly conducive to fungal growth, sporulation, and spore dispersal, creating conditions that favour the proliferation of diverse fungal species within enclosed buildings (Fakunle et al., 2022). Several studies conducted within Nigerian tertiary institutions have confirmed the presence of significant fungal loads in indoor air across various building types. Shittu et al. (2019) assessed indoor air quality across multiple rooms at a Nigerian university campus in Lagos, reporting substantial microbial contamination in offices, lecture theatres, laboratories, and workshops. Similarly, Wemedo and Beke (2020) investigated indoor airborne mycoflora in buildings of a tertiary institution in Rivers State, identifying a diverse range of fungal species and noting that building design, occupancy patterns, and maintenance practices significantly influenced fungal concentrations. Odebode et al. (2019) examined air-mycoflora at eating places on the University of Lagos campus, further demonstrating the ubiquity of airborne fungi in Nigerian university environments.",
-            font: "Times New Roman", size: 24, color: colors.body
-          })]
+          heading: HeadingLevel.HEADING_1,
+          children: [new TextRun({ text: "References" })],
         }),
-
-        new Paragraph({
-          alignment: AlignmentType.JUSTIFIED,
-          spacing: { after: 200, line: 360 },
-          children: [new TextRun({
-            text: "Research conducted in other tropical and subtropical African countries corroborates the Nigerian findings. Yafetto and Adatour (2018) assessed fungal contamination of indoor and outdoor air at the University of Cape Coast in Ghana, identifying multiple fungal genera and noting the influence of seasonal variations on fungal diversity and abundance. Hayleeyesus and Manaye (2014) evaluated the microbiological quality of indoor air in university libraries in Ethiopia, finding fungal loads that ranged from 367 to 2,595 CFU/m\u00B3, values that exceeded several international indoor air quality guidelines. The study of indoor fungal contamination has also been extended to healthcare settings within Nigeria, with Okolo et al. (2020) examining indoor air and surface fungal contamination in the Special Care Baby Unit of a tertiary hospital in Jos, Plateau State, and Ekhaise and Ogboghodo (2011) surveying indoor and outdoor air quality in two major hospitals in Benin City, Edo State. These investigations collectively highlight the pervasiveness of fungal contamination in indoor environments across Nigeria and the broader West African subregion.",
-            font: "Times New Roman", size: 24, color: colors.body
-          })]
-        }),
-
-        new Paragraph({
-          alignment: AlignmentType.JUSTIFIED,
-          spacing: { after: 200, line: 360 },
-          children: [new TextRun({
-            text: "Nile University of Nigeria, located in Abuja, the Federal Capital Territory, is a private institution that has experienced significant growth in its student population and physical infrastructure since its establishment. The university campus comprises several academic buildings, including the Niger, Volta, and Limpopo buildings, which house various faculties and departments. These academic buildings feature reception areas that serve as central points of access and interaction for students, faculty, staff, and visitors. Given the tropical climate of Abuja, characterised by distinct wet and dry seasons with consistently warm temperatures and periodic elevated humidity levels, the indoor environments within these buildings are potentially susceptible to fungal colonisation and spore accumulation. Despite the critical importance of indoor air quality for the health and productivity of the university community, there is currently a paucity of data regarding the fungal microflora present in the indoor air of reception areas within the Niger, Volta, and Limpopo academic buildings. This knowledge gap represents a significant oversight, particularly given the well-established links between indoor fungal exposure and adverse health outcomes.",
-            font: "Times New Roman", size: 24, color: colors.body
-          })]
-        }),
-
-        new Paragraph({
-          alignment: AlignmentType.JUSTIFIED,
-          spacing: { after: 200, line: 360 },
-          children: [new TextRun({
-            text: "The present study is therefore designed to address this gap by conducting a systematic assessment of the fungal microflora in the indoor air of reception areas in the Niger, Volta, and Limpopo academic buildings at Nile University of Nigeria. By isolating, identifying, and characterising the airborne fungal species present in these high-traffic indoor spaces, this research aims to generate baseline data that will inform evidence-based recommendations for improving indoor air quality and safeguarding the health of the university community. The findings of this study will contribute to the growing body of literature on indoor aeromycology in Nigerian educational institutions and will serve as a reference for future research, environmental monitoring programmes, and institutional policy development aimed at ensuring safe and healthy learning environments.",
-            font: "Times New Roman", size: 24, color: colors.body
-          })]
-        }),
-
-        // 1.2 STATEMENT OF THE RESEARCH PROBLEM
-        new Paragraph({
-          heading: HeadingLevel.HEADING_2,
-          spacing: { before: 480, after: 240 },
-          children: [new TextRun({ text: "1.2  Statement of the Research Problem", font: "Times New Roman", size: 28, bold: true, color: colors.primary })]
-        }),
-
-        new Paragraph({
-          alignment: AlignmentType.JUSTIFIED,
-          spacing: { after: 200, line: 360 },
-          children: [new TextRun({
-            text: "Indoor air quality in educational institutions is a critical determinant of the health, comfort, and academic performance of students, faculty, and staff. Among the biological contaminants that compromise indoor air quality, airborne fungi occupy a position of particular concern due to their capacity to cause allergic reactions, respiratory infections, toxicosis through mycotoxin production, and structural damage to building materials and stored items (Cervantes et al., 2025). Reception areas in academic buildings represent especially vulnerable indoor spaces because they function as high-traffic zones where large numbers of individuals congregate, facilitating the continuous introduction and resuspension of fungal spores from both outdoor and indoor sources. The design and operational characteristics of these spaces, including the frequency of door and window openings, the density of human occupancy, and the adequacy of ventilation systems, can significantly influence the concentration and composition of airborne fungal communities.",
-            font: "Times New Roman", size: 24, color: colors.body
-          })]
-        }),
-
-        new Paragraph({
-          alignment: AlignmentType.JUSTIFIED,
-          spacing: { after: 200, line: 360 },
-          children: [new TextRun({
-            text: "At Nile University of Nigeria, the Niger, Volta, and Limpopo academic buildings are major hubs of academic and administrative activity. Their reception areas receive a continuous influx of students, lecturers, administrative personnel, and visitors throughout the academic day, creating conditions that are potentially conducive to the accumulation and dispersal of airborne fungal spores. The tropical climate of Abuja, with its elevated ambient temperatures and seasonal spikes in relative humidity during the rainy months, further compounds the risk of fungal proliferation in these enclosed spaces. Despite these recognised risk factors, there has been no prior systematic assessment of the fungal microflora present in the indoor air of the reception areas within these three academic buildings. This absence of data means that the university community may be unknowingly exposed to fungal species that pose health risks, particularly to individuals with pre-existing respiratory conditions such as asthma, allergic rhinitis, or compromised immune systems.",
-            font: "Times New Roman", size: 24, color: colors.body
-          })]
-        }),
-
-        new Paragraph({
-          alignment: AlignmentType.JUSTIFIED,
-          spacing: { after: 200, line: 360 },
-          children: [new TextRun({
-            text: "The lack of baseline data on indoor fungal contamination also impedes the development of targeted intervention strategies for improving air quality within these buildings. Without an understanding of the specific fungal genera and species present, their relative abundance, and the environmental factors driving their proliferation, any efforts to mitigate indoor air contamination would be largely speculative and potentially ineffective. This research problem is further underscored by the findings of previous studies in similar Nigerian educational settings, which have consistently reported elevated fungal loads in indoor air that exceeded recommended thresholds, with the predominance of potentially pathogenic genera such as Aspergillus, Penicillium, and Cladosporium (Obajuluwa et al., 2022; Shittu et al., 2019). The present study therefore seeks to fill this critical knowledge gap by providing a comprehensive assessment of the fungal microflora in the reception areas of the Niger, Volta, and Limpopo buildings, thereby generating the empirical data necessary for informed decision-making regarding indoor air quality management at Nile University of Nigeria.",
-            font: "Times New Roman", size: 24, color: colors.body
-          })]
-        }),
-
-        // 1.3 JUSTIFICATION OF THE STUDY
-        new Paragraph({
-          heading: HeadingLevel.HEADING_2,
-          spacing: { before: 480, after: 240 },
-          children: [new TextRun({ text: "1.3  Justification of the Study", font: "Times New Roman", size: 28, bold: true, color: colors.primary })]
-        }),
-
-        new Paragraph({
-          alignment: AlignmentType.JUSTIFIED,
-          spacing: { after: 200, line: 360 },
-          children: [new TextRun({
-            text: "The justification for this study is rooted in the fundamental importance of maintaining healthy indoor air quality in educational institutions and the specific vulnerability of reception areas in academic buildings to fungal contamination. Indoor air quality has been recognised by the World Health Organization and other international public health bodies as a major environmental health determinant, with biological contaminants such as fungal spores identified as key contributors to the sick building syndrome, a constellation of health symptoms that are associated with occupancy of certain indoor environments (Verma et al., 2012). Students, lecturers, and administrative staff who spend prolonged periods in indoor environments with elevated fungal loads are at increased risk of developing or exacerbating respiratory conditions, allergic responses, and other fungal-related health problems. The economic and social costs of these health impacts, including lost productivity, increased healthcare utilisation, and diminished academic performance, provide a compelling rationale for conducting regular assessments of indoor fungal contamination in institutional settings.",
-            font: "Times New Roman", size: 24, color: colors.body
-          })]
-        }),
-
-        new Paragraph({
-          alignment: AlignmentType.JUSTIFIED,
-          spacing: { after: 200, line: 360 },
-          children: [new TextRun({
-            text: "Reception areas in the Niger, Volta, and Limpopo academic buildings at Nile University of Nigeria represent strategic sampling points for several reasons. Firstly, these areas are characterised by the highest foot traffic among all spaces within the buildings, making them potential hotspots for the introduction and redistribution of fungal spores from both outdoor and indoor sources. Secondly, reception areas are often located near building entrances, where the influence of outdoor air is most pronounced, and where temperature and humidity gradients between the exterior and interior environments may create microclimatic conditions that favour fungal survival and growth. Thirdly, these areas are typically furnished with materials such as carpets, upholstered furniture, and wooden fixtures that can trap dust and organic matter, providing substrates for fungal colonisation. Despite the clear rationale for monitoring fungal air quality in these spaces, no prior study has specifically targeted the reception areas of these three academic buildings, making the present investigation both novel and timely.",
-            font: "Times New Roman", size: 24, color: colors.body
-          })]
-        }),
-
-        new Paragraph({
-          alignment: AlignmentType.JUSTIFIED,
-          spacing: { after: 200, line: 360 },
-          children: [new TextRun({
-            text: "Furthermore, the findings of this study will provide essential baseline data that can serve multiple practical purposes. For the university administration, the results will offer a scientific basis for evaluating current building maintenance practices, ventilation adequacy, and cleaning protocols, and for implementing targeted improvements where necessary. For the broader academic community, the data will contribute to the limited but growing body of literature on indoor aeromycology in Nigerian tertiary institutions, facilitating comparisons with studies conducted in other universities within Nigeria and across the West African subregion. For public health professionals and environmental microbiologists, the identification and characterisation of fungal species in these indoor environments will enhance understanding of the mycological profile of Nigerian educational buildings and inform the development of context-appropriate guidelines for indoor air quality standards. The study also aligns with the global emphasis on sustainable building management practices, as advocated by contemporary frameworks such as the United Nations Sustainable Development Goals (SDGs), particularly SDG 3 (Good Health and Well-being) and SDG 4 (Quality Education), both of which underscore the importance of providing healthy and safe learning environments.",
-            font: "Times New Roman", size: 24, color: colors.body
-          })]
-        }),
-
-        // 1.4 AIM AND OBJECTIVES OF THE STUDY
-        new Paragraph({
-          heading: HeadingLevel.HEADING_2,
-          spacing: { before: 480, after: 240 },
-          children: [new TextRun({ text: "1.4  Aim and Objectives of the Study", font: "Times New Roman", size: 28, bold: true, color: colors.primary })]
-        }),
-
-        new Paragraph({
-          alignment: AlignmentType.JUSTIFIED,
-          spacing: { after: 200, line: 360 },
-          children: [new TextRun({
-            text: "The aim of this study is to assess the fungal microflora present in the indoor air of reception areas in three academic buildings, namely Niger, Volta, and Limpopo, at Nile University of Nigeria. This overarching aim is pursued through the following specific objectives:",
-            font: "Times New Roman", size: 24, color: colors.body
-          })]
-        }),
-
-        new Paragraph({
-          alignment: AlignmentType.JUSTIFIED,
-          spacing: { after: 160, line: 360 },
-          indent: { left: 720 },
-          numbering: { reference: "objectives-list", level: 0 },
-          children: [new TextRun({
-            text: "To determine the fungal load (colony-forming units per cubic metre of air) in the indoor air of reception areas in the Niger, Volta, and Limpopo academic buildings.",
-            font: "Times New Roman", size: 24, color: colors.body
-          })]
-        }),
-
-        new Paragraph({
-          alignment: AlignmentType.JUSTIFIED,
-          spacing: { after: 160, line: 360 },
-          indent: { left: 720 },
-          numbering: { reference: "objectives-list", level: 0 },
-          children: [new TextRun({
-            text: "To isolate and identify the predominant fungal genera and species present in the indoor air samples collected from the reception areas of the three academic buildings.",
-            font: "Times New Roman", size: 24, color: colors.body
-          })]
-        }),
-
-        new Paragraph({
-          alignment: AlignmentType.JUSTIFIED,
-          spacing: { after: 160, line: 360 },
-          indent: { left: 720 },
-          numbering: { reference: "objectives-list", level: 0 },
-          children: [new TextRun({
-            text: "To compare the diversity and abundance of airborne fungal species among the three academic buildings and assess whether statistically significant differences exist between them.",
-            font: "Times New Roman", size: 24, color: colors.body
-          })]
-        }),
-
-        new Paragraph({
-          alignment: AlignmentType.JUSTIFIED,
-          spacing: { after: 200, line: 360 },
-          indent: { left: 720 },
-          numbering: { reference: "objectives-list", level: 0 },
-          children: [new TextRun({
-            text: "To evaluate the potential health implications of the identified fungal species for occupants of the buildings and provide evidence-based recommendations for improving indoor air quality.",
-            font: "Times New Roman", size: 24, color: colors.body
-          })]
-        }),
-
-        // 1.5 SIGNIFICANCE OF THE STUDY
-        new Paragraph({
-          heading: HeadingLevel.HEADING_2,
-          spacing: { before: 480, after: 240 },
-          children: [new TextRun({ text: "1.5  Significance of the Study", font: "Times New Roman", size: 28, bold: true, color: colors.primary })]
-        }),
-
-        new Paragraph({
-          alignment: AlignmentType.JUSTIFIED,
-          spacing: { after: 200, line: 360 },
-          children: [new TextRun({
-            text: "This study holds considerable significance for multiple stakeholders, including the immediate university community, the broader field of environmental microbiology, public health policy, and institutional facility management. From a public health perspective, the identification and quantification of fungal species in the reception areas of the Niger, Volta, and Limpopo buildings will provide critical information about the potential exposure risks faced by students, faculty, staff, and visitors. By documenting the specific fungal genera present and their relative abundance, the study will enable healthcare providers within the university health services to better understand the mycological dimensions of indoor air-related health complaints, such as respiratory distress, allergic reactions, and unexplained flu-like symptoms that may be attributable to fungal exposure. This knowledge is particularly important for protecting vulnerable subpopulations within the university community, including individuals with asthma, allergic rhinitis, atopic dermatitis, and those with immunocompromised conditions.",
-            font: "Times New Roman", size: 24, color: colors.body
-          })]
-        }),
-
-        new Paragraph({
-          alignment: AlignmentType.JUSTIFIED,
-          spacing: { after: 200, line: 360 },
-          children: [new TextRun({
-            text: "From an institutional management standpoint, the findings of this study will provide Nile University of Nigeria with empirically grounded evidence to guide decisions regarding building maintenance, ventilation improvement, and cleaning protocols within the academic buildings. If the assessment reveals fungal loads that exceed recommended thresholds, or identifies the presence of known pathogenic or toxigenic species, the university administration will be positioned to take proactive corrective measures, such as upgrading ventilation systems, implementing regular air quality monitoring programmes, or commissioning professional building hygiene assessments. These interventions have the potential to reduce occupant health complaints, enhance comfort and satisfaction within the learning environment, and contribute to the overall reputation of the university as an institution that prioritises the health and safety of its community. The study also provides a model that could be replicated across other buildings within the university campus, thereby supporting a comprehensive, campus-wide approach to indoor air quality management.",
-            font: "Times New Roman", size: 24, color: colors.body
-          })]
-        }),
-
-        new Paragraph({
-          alignment: AlignmentType.JUSTIFIED,
-          spacing: { after: 200, line: 360 },
-          children: [new TextRun({
-            text: "From an academic and scientific perspective, this study contributes valuable data to the existing body of knowledge on indoor aeromycology in Nigerian educational institutions. While several studies have examined indoor air quality in Nigerian universities, the specific focus on reception areas of academic buildings at Nile University of Nigeria represents a novel contribution that addresses a previously uninvestigated aspect of the campus environment. The comparative analysis of fungal diversity and abundance across three distinct buildings will generate insights into the influence of building-specific factors, such as occupancy patterns, ventilation design, and maintenance practices, on indoor fungal communities. These findings will be of interest to researchers in the fields of environmental microbiology, mycology, indoor air quality science, and building ecology, and will provide a foundation for future longitudinal studies that track seasonal and temporal variations in indoor fungal contamination within the university campus.",
-            font: "Times New Roman", size: 24, color: colors.body
-          })]
-        }),
-
-        new Paragraph({
-          alignment: AlignmentType.JUSTIFIED,
-          spacing: { after: 200, line: 360 },
-          children: [new TextRun({
-            text: "Additionally, the study has implications for the development of indoor air quality guidelines and standards specifically tailored to the Nigerian educational context. Currently, many Nigerian institutions rely on international indoor air quality standards, such as those established by the American Conference of Governmental Industrial Hygienists (ACGIH) or the European Federation of Clean Air and Environmental Protection Associations (EFCEAPA), which may not fully account for the unique climatic, architectural, and cultural factors that influence indoor air quality in tropical African settings. The data generated by this study will contribute to the evidence base needed to support the formulation of context-appropriate national guidelines for indoor fungal contamination in educational and other public buildings in Nigeria.",
-            font: "Times New Roman", size: 24, color: colors.body
-          })]
-        }),
-
-        // 1.6 SCOPE OF THE STUDY
-        new Paragraph({
-          heading: HeadingLevel.HEADING_2,
-          spacing: { before: 480, after: 240 },
-          children: [new TextRun({ text: "1.6  Scope of the Study", font: "Times New Roman", size: 28, bold: true, color: colors.primary })]
-        }),
-
-        new Paragraph({
-          alignment: AlignmentType.JUSTIFIED,
-          spacing: { after: 200, line: 360 },
-          children: [new TextRun({
-            text: "This study is focused specifically on the assessment of fungal microflora in the indoor air of reception areas within three academic buildings, namely the Niger, Volta, and Limpopo buildings, at Nile University of Nigeria, Abuja. The scope of the investigation encompasses the collection of air samples from the reception areas of each building using established microbiological sampling techniques, the cultivation of fungal colonies on appropriate culture media, and the identification and characterisation of fungal isolates based on their macroscopic and microscopic morphological features. The study will determine the fungal load at each sampling site, expressed as colony-forming units per plate, and will identify the predominant fungal genera and species present. A comparative analysis of fungal diversity and abundance across the three buildings will be conducted to assess whether significant inter-building differences exist.",
-            font: "Times New Roman", size: 24, color: colors.body
-          })]
-        }),
-
-        new Paragraph({
-          alignment: AlignmentType.JUSTIFIED,
-          spacing: { after: 200, line: 360 },
-          children: [new TextRun({
-            text: "The study is limited to the mycological assessment of indoor air and does not extend to the investigation of other biological air contaminants such as bacteria, viruses, or pollen. Furthermore, the study is confined to the reception areas of the specified buildings and does not include other indoor spaces such as classrooms, laboratories, libraries, or offices within the same buildings. The identification of fungal isolates will be based on conventional morphological and microscopic methods, and the study will not employ molecular techniques such as polymerase chain reaction (PCR) or DNA sequencing for species-level identification. Environmental parameters such as temperature, relative humidity, and ventilation rates may be recorded at the time of sampling to provide contextual information, but a detailed investigation of the relationship between these parameters and fungal load falls outside the primary scope of this study. The temporal scope of the study is limited to a single sampling period, and the findings should therefore be interpreted as representing a snapshot of the fungal microflora at a specific point in time rather than a comprehensive characterisation of year-round indoor fungal dynamics.",
-            font: "Times New Roman", size: 24, color: colors.body
-          })]
-        }),
-      ]
-    }
-  ]
+        // Reference list
+        ...[
+          'Al Hallak, M., Verdier, T., Bertron, A., Roques, C., & Bailly, J.-D. (2023). Fungal contamination of building materials and the aerosolization of particles and toxins in indoor air and their associated risks to health: A review. Toxins, 15(3), 175.',
+          'Anaissie, E. J., Stratton, S. L., Dignani, M. C., Lee, C. K., Summerbell, R. C., Rex, J. H., Monson, T. P., & Walsh, T. J. (2002). Pathogenic Aspergillus species recovered from a hospital water system: A 3-year prospective study. Clinical Infectious Diseases, 34(6), 780–789.',
+          'Burge, H. A. (1990). Bioaerosols: Prevalence and health effects in the indoor environment. Journal of Allergy and Clinical Immunology, 86(5), 687–701.',
+          'Chin, J. Y. W., Zheng, M., Kuo, H.-W., Chang, C.-C., Lee, C.-T., Sahu, S. K., ... & Wu, C.-F. (2020). Indoor microbiome, environmental characteristics and asthma among junior high school students in Johor Bahru, Malaysia. Environment International, 138, 105664.',
+          'Eze, E. I., Igwe, V. N., Nwafor, O. I., & Okpokwasili, G. C. (2021). Incidence of fungal aerosols from selected crowded places in Port Harcourt, Nigeria. Asian Journal of Atmospheric Environment, 15(3), 2021036.',
+          'Fan, G., Zhang, R., Yang, X., Wang, P., Zhou, X., & Zhang, X. (2021). Investigation of fungal contamination in urban houses with children in six major Chinese cities: Genus and concentration characteristics. Building and Environment, 205, 108229.',
+          'Kallawicha, K., Wu, P.-C., Lung, S.-C. C., Lin, Y.-C., Chou, C.-H., Wang, Y.-F., & Su, H.-J. (2017). Ambient fungal spore concentration in a subtropical metropolis: Temporal distributions and meteorological determinants. Aerosol and Air Quality Research, 17, 2051–2063.',
+          'Khan, A. A. H., & Mohan Karuppayil, S. (2012). Fungal pollution of indoor environments and its management. Saudi Journal of Biological Sciences, 19(4), 405–426.',
+          'Lu, Y., Wang, X., de Souza Almeida, L. C., & Pecoraro, L. (2022). Environmental factors affecting diversity, structure, and temporal variation of airborne fungal communities in a research and teaching building of Tianjin University, China. Journal of Fungi, 8(5), 431.',
+          'Madukasi, I., Ezejiofor, A. N., Nwaoguikpe, R. N., & Okolo, B. N. (2021). Microbiological indoor air quality within a tertiary institution in south-east, Nigeria. International Journal of Multi-disciplinary Academic Studies, 9(1), 1–14.',
+          'Mousavi, B., Hedayati, M. T., Hedayati, N., Ilkit, M., & Syedmousavi, S. (2016). Aspergillus species in indoor environments and their possible occupational and public health hazards. Current Medical Mycology, 2(1), 36–42.',
+          'Nevalainen, A., Täubel, M., & Hyvärinen, A. (2015). Indoor fungi: Companions and contaminants. Indoor Air, 25(2), 125–156.',
+          'Odebode, A. C., Adekunle, A. A., Stajich, J. E., & Adeonipekun, P. A. (2020). Airborne fungal spores distribution in various locations in Lagos, Nigeria. Environmental Monitoring and Assessment, 192(2), 87.',
+          'World Health Organization. (2009). WHO guidelines for indoor air quality: Dampness and mould. WHO Regional Office for Europe, Copenhagen.',
+          'Wu, Y., Zhang, R., Cai, J., Zhang, Y., Zhao, S., Fan, G., ... & Wang, P. (2020). Indoor exposure levels of bacteria and fungi in residences, schools, and offices in China: A systematic review. Indoor Air, 30(6), 1147–1165.',
+          'Yuan, C., Wang, X., & Pecoraro, L. (2022). Environmental factors shaping the diversity and spatial-temporal distribution of indoor and outdoor culturable airborne fungal communities in Tianjin University campus, Tianjin, China. Frontiers in Microbiology, 13, 928921.',
+          'Zhang, X., Zhang, R., Wu, Y., Zheng, M., & Wang, P. (2022). Airborne fungal spore review, new advances and automatisation. Atmosphere, 13(2), 308.',
+        ].map(ref =>
+          bodyPara([t(ref)], { indent: { left: 720, hanging: 720 }, spacing: { after: 100, line: 250 } })
+        ),
+      ],
+    },
+  ],
 });
 
+// Generate file
 Packer.toBuffer(doc).then(buffer => {
-  fs.writeFileSync("/home/z/my-project/download/Chapter_One_Fungal_Microflora_Nile_University.docx", buffer);
-  console.log("Chapter One DOCX generated successfully!");
+  fs.writeFileSync("/home/z/my-project/download/Chapter_One_Fungal_Microflora_Nile_University_Revised.docx", buffer);
+  console.log("Document saved successfully.");
 });
