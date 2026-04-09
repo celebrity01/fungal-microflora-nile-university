@@ -52,17 +52,17 @@ const backgroundParas = [
   ]),
 
   bodyPara([
-    t("Educational buildings deserve special attention in this conversation. Students and staff spend hours each day in lecture halls, laboratories, libraries, and reception areas, often in buildings that were not originally designed with indoor air quality as a priority. The situation in tropical and subtropical regions is especially concerning. Warm temperatures, high relative humidity, and seasonal rainfall create conditions that favour fungal growth on building materials and in the air (Al Hallak et al., 2023). Kallawicha et al. (2017) demonstrated this clearly in their study of ambient fungal spore concentrations in Taipei, a subtropical city, where they found that temperature and relative humidity were the strongest meteorological predictors of airborne fungal load. Similarly, Chin et al. (2020) reported significant associations between indoor fungal exposure and asthma among junior high school students in Johor Bahru, Malaysia — another tropical setting — underscoring the health stakes for young people in these environments.")
+    t("What about schools and universities? Students and staff spend hours each day in lecture halls, laboratories, libraries, and reception areas, often in buildings that were not designed with indoor air quality as a priority. The situation is worse in tropical and subtropical regions. Warm temperatures, high relative humidity, and seasonal rainfall create conditions that favour fungal growth on building materials and in the air (Al Hallak et al., 2023). Kallawicha et al. (2017) showed this in Taipei, where temperature and relative humidity were the strongest meteorological predictors of airborne fungal load. Chin et al. (2020) found significant associations between indoor fungal exposure and asthma among junior high school students in Johor Bahru, Malaysia — another tropical setting.")
   ]),
 
   bodyPara([
     t("In Nigeria specifically, research on indoor aeromycology has grown but remains limited. Odebode et al. (2020) surveyed airborne fungi across five locations in Lagos State between 2014 and 2016 and found that "),
     ti("Aspergillus"), t(" and "),
-    ti("Penicillium"), t(" species dominated the indoor air profiles, a finding consistent with studies from other humid tropical cities. Madukasi et al. (2021) assessed microbiological air quality in lecture halls, laboratories, and offices at a tertiary institution in south-eastern Nigeria and reported fungal counts that exceeded recommended thresholds in several locations. Eze et al. (2021) likewise documented elevated fungal aerosol loads in crowded indoor spaces in Port Harcourt, including schools and markets. These studies, taken together, suggest that fungal contamination of indoor air is a real and measurable problem in Nigerian educational settings, though the body of evidence is still far from comprehensive.")
+    ti("Penicillium"), t(" species dominated the indoor air profiles, a finding consistent with studies from other humid tropical cities. Madukasi et al. (2021) assessed microbiological air quality in lecture halls, laboratories, and offices at a tertiary institution in south-eastern Nigeria and reported fungal counts that exceeded recommended thresholds in several locations. Eze et al. (2021) likewise documented elevated fungal aerosol loads in crowded indoor spaces in Port Harcourt, including schools and markets. The picture emerging from these studies is that fungal contamination of indoor air is a real and measurable problem in Nigerian educational settings, even though the evidence is still far from comprehensive.")
   ]),
 
   bodyPara([
-    t("This is the context in which the present study sits. Nile University of Nigeria, located in the nation's capital territory of Abuja, operates several academic buildings that serve hundreds of students and staff each day. Among these are the Niger, Volta, and Limpopo buildings — three named halls that house reception areas, lecture rooms, and administrative offices. Like many institutions in the region, the university has expanded rapidly, and questions about the quality of the indoor environment in these buildings have not, to date, been systematically addressed. This chapter sets out the rationale for investigating the fungal microflora in the reception areas of these three buildings, the questions the study seeks to answer, and the contribution it aims to make to the broader literature on indoor air quality in tropical educational institutions.")
+    t("Nile University of Nigeria is located in Abuja and operates several academic buildings that serve hundreds of students and staff each day. Among these are the Niger, Volta, and Limpopo buildings — three named halls that house reception areas, lecture rooms, and administrative offices. The university has expanded rapidly in recent years, but questions about the quality of the indoor environment in these buildings have not been systematically addressed. The rest of this chapter outlines the rationale for the study, the research questions, and what the study hopes to contribute.")
   ]),
 ];
 
@@ -77,7 +77,7 @@ const problemParas = [
 
   bodyPara([
     t("There is also the matter of health risk perception. Students and staff at institutions like Nile University may be routinely exposed to airborne fungal spores without any awareness of the fact, and without any institutional monitoring in place to track exposure levels over time. Mousavi et al. (2016) highlighted the particular concern posed by "),
-    ti("Aspergillus"), t(" species in indoor environments, noting their capacity to cause invasive aspergillosis in vulnerable individuals. While healthy adults may tolerate moderate spore exposures without obvious symptoms, the same cannot be said for individuals with asthma, chronic respiratory conditions, or weakened immune systems — populations that are present on any university campus. Without data, there is no basis for risk assessment, and without risk assessment, there is no impetus for improvement.")
+    ti("Aspergillus"), t(" species in indoor environments, noting their capacity to cause invasive aspergillosis in vulnerable individuals. While healthy adults may tolerate moderate spore exposures without obvious symptoms, the same cannot be said for individuals with asthma, chronic respiratory conditions, or weakened immune systems — populations that are present on any university campus. At present, there is no data available on which to base any kind of risk assessment for these buildings.")
   ]),
 
   bodyPara([
@@ -87,7 +87,7 @@ const problemParas = [
 
 const justificationParas = [
   bodyPara([
-    t("A handful of Nigerian studies have touched on indoor air quality in educational settings — Madukasi et al. (2021) in the south-east, Eze et al. (2021) in Port Harcourt, and others — but these were conducted at different institutions, in different climatic zones, and often with different sampling methodologies. Abuja sits in Nigeria's middle belt, characterised by a mix of Sudan savanna vegetation, distinct wet and dry seasons, and an altitude of around 840 metres above sea level. These geographic and climatic features distinguish it from the more southern and coastal cities where most Nigerian aeromycology research has taken place. A study conducted here would add a genuinely new data point to the national literature.")
+    t("A handful of Nigerian studies have touched on indoor air quality in educational settings — Madukasi et al. (2021) in the south-east, Eze et al. (2021) in Port Harcourt, and a few others. But these were conducted at different institutions, in different climatic zones, and often with different sampling methodologies, so comparing them directly is not straightforward. Abuja sits in Nigeria's middle belt, with a mix of Sudan savanna vegetation, distinct wet and dry seasons, and an altitude of around 840 metres above sea level. These conditions are quite different from the more southern and coastal cities where most Nigerian aeromycology research has been done. A study conducted here would add a genuinely new data point to the national literature.")
   ]),
 
   bodyPara([
@@ -99,7 +99,7 @@ const justificationParas = [
   ]),
 
   bodyPara([
-    t("Taken together, the geographic specificity (Abuja), the institutional context (Nile University), the focus on reception areas, and the use of morphological identification methods make this study a meaningful addition to the evidence base. It is not an exhaustive survey of all indoor spaces on campus, but it is a focused, reproducible assessment that can serve as a starting point for more extensive monitoring in the future.")
+    t("The decision to focus on Abuja, on a single institution, and on reception areas rather than whole buildings, is a limitation but also a practical one. A more comprehensive campus-wide survey would be ideal, but the resources and time available for this study made a narrower focus necessary.")
   ]),
 ];
 
@@ -142,7 +142,7 @@ const significanceParas = [
   ]),
 
   bodyPara([
-    t("Finally, from a public health and sustainable development perspective, this study aligns with the Sustainable Development Goals — specifically SDG 3 (Good Health and Well-being) and SDG 4 (Quality Education). Students and staff have a right to learn and work in environments that do not pose unnecessary health risks, and generating the data needed to ensure that is a worthwhile endeavour in itself.")
+    t("There is also a practical dimension for the university itself. If the results show that fungal loads are within acceptable limits, the institution can point to that as part of its overall environmental health record. If the results show the opposite, then at least the administration has something concrete to act on, rather than waiting for complaints or health incidents to force a response.")
   ]),
 ];
 
